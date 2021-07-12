@@ -1870,7 +1870,7 @@ var substituteSiteTemplateContentsWithHeaderPropsOnFetch = function (
 
 /**
  * Since we use one simple script for everything, we need to detect how it's
- * being used. If not a node script, it could be included form the main html
+ * being used. If not a node script, it could be included from the main html
  * page, or from a docs/stylus page. The main script tag in the main page will
  * be run at a point where there's no body in the document. For doc pages
  * (markdown/stylus) it will have a script tag at the top which implicitly
@@ -2088,6 +2088,7 @@ if (MODE === "bookmarkNodeMode") {
   window.onbeforeunload = function () {};
   document.addEventListener("DOMContentLoaded", function () {
     var plaintexts = document.querySelectorAll("plaintext");
+    console.log(plaintexts)
     if (plaintexts.length === 1) {
       // innerHtml escapes markup in plaintext in Safari, but not Chrome.
       // innerText behaves correctly for both.
@@ -2239,6 +2240,7 @@ if (MODE === "bookmarkNodeMode") {
     };
 
     Flatdoc.emptyPageData = function(pageKey) {
+
       return {
         ___pageKeyForErrorMessages: pageKey,
         explicitlySpecifiedPageConfig: null,
