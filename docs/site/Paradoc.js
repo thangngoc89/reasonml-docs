@@ -1,3 +1,8 @@
+// @ts-check
+/**
+ * @depends BookmarkTemplate <string> 
+ */
+
 /*!
  * Flatdoc - (c) 2013, 2014 Rico Sta. Cruz
  * http://ricostacruz.com/flatdoc
@@ -9,27 +14,34 @@ var headerHeight = 52;
 
 /**
  * Pass the window.location.href
+ * @param {string} s - Pass the window.local.href here
+ * @return {string} URL basename
  */
 var urlBasename = function (s) {
   return s.split("/").pop().split("#")[0].split("?")[0];
 };
-var urlDir = function (s) {
-  var lst =  s.split("/");
-  var withoutLast = lst.pop();
-};
-var indexify = function(path) {
-  var splits = path.split('/');
-  if(splits.length > 0) {
-    var last = splits[splits.length - 1];
-    if (path.lastIndexOf(".js") !== path.length - 3) {
-      return path + '/index.js';
-    } else {
-      return path;
-    }
-  }
-};
+// var urlDir = function (s) {
+//   var lst =  s.split("/");
+//   var withoutLast = lst.pop();
+// };
+// var indexify = function(path) {
+//   var splits = path.split('/');
+//   if(splits.length > 0) {
+//     var last = splits[splits.length - 1];
+//     if (path.lastIndexOf(".js") !== path.length - 3) {
+//       return path + '/index.js';
+//     } else {
+//       return path;
+//     }
+//   }
+// };
 
 
+/**
+ * Transform kebab-case to Kebab Case 
+ * @param {string} s - kebab-case string to transform 
+ * @return {string}
+ */
 var kebabToWords = function(s) {
   var ss = s.replace(
     /-./g,
@@ -44,12 +56,18 @@ var kebabToWords = function(s) {
  * Must supply href as written in dom node, not a.href which is fully resolved.
  * TODOSecurityAudit:
  */
-var isHrefAttributeLocal = function (relativeToPageUrl, href) {
-  return href.indexOf('file://') !== 0 &&
-    href.indexOf('https://') !== 0 &&
-    href.indexOf('http://') !== 0;
-};
+// var isHrefAttributeLocal = function (relativeToPageUrl, href) {
+//   return href.indexOf('file://') !== 0 &&
+//     href.indexOf('https://') !== 0 &&
+//     href.indexOf('http://') !== 0;
+// };
 
+/** 
+ * Get basename without html extension 
+ * This is used for pageKey after pasing through lowercase
+ * @param {string} s - url
+ * @return {string}
+ */
 var urlExtensionlessBasename = function (s) {
   return s.split("/").pop().split("#")[0].split("?")[0].replace(".html", "");
 };
@@ -61,18 +79,18 @@ var removeSiblingsBefore = function(n, node) {
   }
 };
 
-var urlForPageKey = function (s) {
-  return s + ".html";
-};
+// var urlForPageKey = function (s) {
+//   return s + ".html";
+// };
 
-var slugPrefix = function (hash) {
-  if (hash === "" || hash[0] !== "#") {
-    return "";
-  } else {
-    hash = hash.substr(1);
-    return (hash.split("-").length ? hash.split("-")[0] : "").toLowerCase();
-  }
-};
+// var slugPrefix = function (hash) {
+//   if (hash === "" || hash[0] !== "#") {
+//     return "";
+//   } else {
+//     hash = hash.substr(1);
+//     return (hash.split("-").length ? hash.split("-")[0] : "").toLowerCase();
+//   }
+// };
 
 function dictToSearchParams(dict) {
   var segs = [];
@@ -83,6 +101,11 @@ function dictToSearchParams(dict) {
 }
 
 var Bookmark = {};
+/**
+ * @param {{ [key: string]: any}} dict
+ * @param {(pageData: any, pageKey: string) => any} onPage
+ * @returns {{ [key: string]: any}}
+ */
 var mapKeys = function (dict, onPage) {
   var result = {};
   for (var pageKey in dict) {
@@ -90,8 +113,13 @@ var mapKeys = function (dict, onPage) {
   }
   return result;
 };
+/**
+ * @param {{ [key: string]: any}} dict
+ * @param {(pageData: any, pageKey: string) => any} onPage
+ * @returns {void}
+ */
 var forEachKey = function (dict, onPage) {
-  var _throwAway = mapKeys(dict, (pageData, pageKey) => (onPage(pageData, pageKey), pageData));
+  mapKeys(dict, (pageData, pageKey) => (onPage(pageData, pageKey), pageData));
 };
 /**
  * n squared but so what.
@@ -273,15 +301,15 @@ var resultsByPageKeyLen = function (resultsByPageKey) {
  * Extracts the ? query param string from a url. It will always be after the
  * hash tag.
  */
-var splitHrefHashAndQueryString = function(s) {
-  var querySearchLoc = href.indexOf("?");
-  var queryParamString = null;
-  if (querySearchLoc !== -1) {
-    queryParamString = s.substr(querySearchLoc + 1);
-    s = s.substr(0, querySearchLoc);
-  }
-  var hashSearchLoc = href.indexOf("#");
-}
+// var splitHrefHashAndQueryString = function(s) {
+//   var querySearchLoc = href.indexOf("?");
+//   var queryParamString = null;
+//   if (querySearchLoc !== -1) {
+//     queryParamString = s.substr(querySearchLoc + 1);
+//     s = s.substr(0, querySearchLoc);
+//   }
+//   var hashSearchLoc = href.indexOf("#");
+// }
 
 var areEqualPathArrs = function(a1, a2) {
   if(a1.length !== a2.length) {
@@ -297,7 +325,7 @@ var areEqualPathArrs = function(a1, a2) {
 
 
 /**
- * 
+ *
  * Urls like blah.html#foo/bar#another-hash
  * Are interpreted as being another way to reference the page
  * foo/bar.html#another-hash (Currently everything relative from the
@@ -322,7 +350,7 @@ var areEqualPathArrs = function(a1, a2) {
  *   directory.
  *
  * Returns one of two types of links:
- * 
+ *
  * External: A link to an external page (not within the documentation).
  *
  *     {
@@ -343,7 +371,7 @@ var areEqualPathArrs = function(a1, a2) {
  *
  * For local URLs, will expect hashes to appear *before* the query params
  * (which is not standard but looks better for this use case).
- * 
+ *
  * Normalizes links across the various doc workflows:
  *
  * - When using Chrome "Save As": Links to internal doc pages will become
@@ -365,10 +393,26 @@ var areEqualPathArrs = function(a1, a2) {
  * If there is an `originallyRenderedAtUrl` and we see a url that does *not*
  * have the same dir as `originallyRenderedAtUrl`, but has the same dir as
  * `currentPageUrl`, it's a link local to the docs (but not Chrome Save As).
- * 
+ * @param {null | Location} originallyRenderedAtUrl 
+ * @param {null | string} originallyRenderedPageKey
+ * @param {Location} currentPageUrl
+ * @param {string} fullyResolvedLinkHref
+ * @returns {
+    {
+      "type": "external",
+      "href": string 
+    } | 
+    {
+      "type": "internal",
+       asAnEmbeddedSubpageOfEntrypointPageKey: string, 
+       pageKey: string,
+       pageExtension: string,
+       hashContents: string,
+       queryParams: { [key: string]: string},
+    }  
+  } link
  */
 var getLink = function (originallyRenderedPageKey, originallyRenderedAtUrl, currentPageUrl, fullyResolvedLinkHref) {
-
   var currentPageOrigin = currentPageUrl.origin;
   var currentPagePathArr = currentPageUrl.pathname.split('/');
   var currentPageDirPathArr = currentPagePathArr.slice(0, currentPagePathArr.length - 1);
@@ -387,7 +431,7 @@ var getLink = function (originallyRenderedPageKey, originallyRenderedAtUrl, curr
     var originallyRenderedAtOrigin = originallyRenderedAtUrl.origin;
     var originallyRenderedAtPathArr = originallyRenderedAtUrl.pathname.split('/');
     var originallyRenderedAtDirPathArr = originallyRenderedAtPathArr.slice(0, originallyRenderedAtPathArr.length - 1);
-    
+
     var originallyRenderedAtHasSameOrigin = originallyRenderedAtOrigin === fullyResolvedLinkOrigin;
     var originallyRenderedAtHasSameDir = areEqualPathArrs(originallyRenderedAtDirPathArr, fullyResolvedLinkDirPathArr);
     if(originallyRenderedAtHasSameOrigin && originallyRenderedAtHasSameDir) {
@@ -408,9 +452,8 @@ var getLink = function (originallyRenderedPageKey, originallyRenderedAtUrl, curr
   var queryStr =
     hashAndQueryString.indexOf("?") == -1 ? '' :
     hashAndQueryString.substr(hashAndQueryString.indexOf("?") + 1);
-  var queryParams = null;
+  var queryParams = {};
   if (queryStr !== '') {
-    var queryParams = {};
     var params = queryStr.split("&");
     for (var i = 0; i < params.length; i++) {
       var param = params[i].split("=");
@@ -424,17 +467,17 @@ var getLink = function (originallyRenderedPageKey, originallyRenderedAtUrl, curr
   } else {
     var hrefBasename = urlBasename(fullyResolvedLinkHref);
     var hrefBasenameExtensionIndex = hrefBasename.lastIndexOf('.');
-    var hrefExtension = hrefBasenameExtensionIndex !== -1 ? 
+    var hrefExtension = hrefBasenameExtensionIndex !== -1 ?
       hrefBasename.substr(hrefBasenameExtensionIndex + 1) :
       null;
-    var hrefExtensionlessBasename = hrefBasenameExtensionIndex !== -1 ? 
+    var hrefExtensionlessBasename = hrefBasenameExtensionIndex !== -1 ?
       hrefBasename.substr(0, hrefBasenameExtensionIndex) :
       hrefBasename;
     // This is just the file portion.
     var urlBasenameRootLowerCase = hrefExtensionlessBasename.toLowerCase();
     urlBasenameRootLowerCase = urlBasenameRootLowerCase.replace(".paradoc-rendered", "");
     urlBasenameRootLowerCase = urlBasenameRootLowerCase.replace(".paradoc-inlined", "");
-    asEmbeddedSubpageOf = urlBasenameRootLowerCase;
+    asEmbeddedSubpageOf = urlBasenameRootLowerCase !== '' ? urlBasenameRootLowerCase : 'index';
   }
 
   // If there's no hash string or there is a hash string but it doesn't have
@@ -469,7 +512,9 @@ var getLink = function (originallyRenderedPageKey, originallyRenderedAtUrl, curr
   }
 };
 
-
+/**
+ * @param {HTMLElement} node
+ */
 var isNodeSearchHit = function (node) {
   return (
     node.tagName === "TR" ||
@@ -525,18 +570,27 @@ var BOOKMARK_LINK_ID_PREFIX = "--bookmark-linkified--";
 
 /**
  * Prepends the linkified prefix.
+ * @param {string} slug
+ * @param {string} pageKey
+ * @return {string}
  */
-
 function pageifiedIdForHash(slug, pageKey) {
   return pageKey + "#" + slug;
 }
 
+/**
+ * @param {string} slug
+ * @param {string} pageKey
+ * @return {string}
+ */
 function fullyQualifiedHeaderId(slug, pageKey) {
   return BOOKMARK_LINK_ID_PREFIX + pageifiedIdForHash(slug, pageKey);
 }
 
 /**
  * Strips the linkified prefix and page prefix.
+ * @param {string} s
+ * @return {string}
  */
 function hashForFullFullyQualifiedHeaderId(s) {
   var withoutLinkifiedPrefix =
@@ -549,6 +603,15 @@ function hashForFullFullyQualifiedHeaderId(s) {
   }
 }
 
+/** 
+ * Create a hidden iframe to load cell content
+ * @param {string} url - URL to be loaded
+ * @param {Object} onDoneCell - Cell callback on success
+ * @param {(contents: string) => void} onDoneCell.contents
+ * @param {Object} onFailCell - Cell callback on failure
+ * @param {(contents: string) => void} onFailCell.contents
+ * @returns {void}
+ */
 var queryContentsViaIframe = function (url, onDoneCell, onFailCell) {
   var timeout = window.setTimeout(function () {
     onFailCell.contents &&
@@ -559,6 +622,11 @@ var queryContentsViaIframe = function (url, onDoneCell, onFailCell) {
           "in the debugger so it timed out?"
       );
   }, 900);
+
+  // TODO: Does this even work? 
+  // addEventListener and removeEventListener work by passing 
+  // the same listener callback 
+  // Obviously `listenerId` is `undefined | void` in this case
   var listenerID = window.addEventListener("message", function (e) {
     if (e.data.messageType === "docPageContent" && e.data.iframeName === url) {
       window.removeEventListener("message", listenerID);
@@ -571,6 +639,7 @@ var queryContentsViaIframe = function (url, onDoneCell, onFailCell) {
       }
     }
   });
+
   var iframe = document.createElement("iframe");
   iframe.name = url;
   // Themes may opt to handle offline/pre rendering, and this is convenient
@@ -581,7 +650,8 @@ var queryContentsViaIframe = function (url, onDoneCell, onFailCell) {
   iframe.className = "removeFromRenderedPage";
   iframe.src = url + "?bookmarkContentQuery=true";
   iframe.style = "display:none !important";
-  iframe.type = "text/plain";
+  // {type} isn't a property on iframe according to https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe
+  // iframe.type = "text/plain";
   iframe.onerror = function (e) {
     if (onFailCell.contents) {
       onFailCell.contents(e);
@@ -621,7 +691,18 @@ function scrollIntoViewAndHighlightNodeById(id) {
   }
 }
 
-// https://stackoverflow.com/a/8342709
+/**
+ * Smooth scroll into view
+ * See: https://stackoverflow.com/a/8342709
+ * @param {{
+    smooth: boolean, 
+    container: "page" | HTMLElement, 
+    element: HTMLElement, 
+    topMargin: number, 
+    bottomMargin: number,
+    mode?: "closest-if-needed" | "top" | "bottom"
+  }} props
+ */
 var customScrollIntoView = function (props) {
   var smooth = props.smooth || false;
   var container = props.container;
@@ -689,8 +770,12 @@ var defaultSlugContributions = {
   h6: true,
 };
 
-// Thank you David Walsh:
-// https://davidwalsh.name/query-string-javascript
+/**
+ * Get query param from URL search
+ * Credit: David Walsh (https://davidwalsh.name/query-string-javascript)
+ * @param {string} name - Name of the query param 
+ * @return {string} value of query param, empty string of param isn't exists
+ */
 function queryParam(name) {
   var res = new RegExp(
     "[\\?&]" + name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]") + "=([^&#]*)"
@@ -698,6 +783,12 @@ function queryParam(name) {
   return res === null ? "" : decodeURIComponent(res[1].replace(/\+/g, " "));
 }
 
+/**
+ * Parse markdown, separate body and yaml header props
+ * @param {string} markdown
+ * @param {string} locationPathname - TODO: What is this?
+ * @return {MarkdownAndHeader}
+ */
 function parseYamlHeader(markdown, locationPathname) {
   markdown = markdown.trim();
   var yamlBoundaries = allMatchingIndicesWillMutateYourRegex(/\-\-\-\n/g, markdown);
@@ -768,6 +859,8 @@ function allMatchingIndicesWillMutateYourRegex(regex, haystack) {
  *     [//]: # (title: me)
  *     [//]: # (description: "Hi there here is an escaped quote \" inside of quotes")
  *     [//]: # (---)
+ * @param {string} markdown
+ * @returns {string}
  */
 function normalizeYamlMarkdownComments(markdown) {
   markdown = markdown.trim();
@@ -801,6 +894,8 @@ function normalizeYamlMarkdownComments(markdown) {
  *
  * Only downside is that it leaves a dangling ) in the text returned to
  * us which we can easily normalize.
+ * @param {string} markdown
+ * @retuns {string} 
  */
 function normalizeMarkdownResponse(markdown) {
   if (markdown[0] === ")" && markdown[1] === "\n") {
@@ -835,6 +930,28 @@ var anyHtmlCommentRegex = new RegExp(
     ")[\n\r])?^```(.+)[\n\r]([^]*?)[\n\r]```",
   "gm"
 );
+
+/**
+ * Replace Docusaurus code tabs HTML comments with custom HTML tags
+ * Turn 
+ <!--CODE_TABS -->
+ <!--My Reason Code Block-->
+ ```reason
+ ...
+ ```
+ <!--My OCaml Code Block-->
+ ```ocaml
+ ...
+ ```
+ <!--END_CODE_TABS-->
+ * Into
+ * <codetabscontainer>
+     <codetabbutton>My Reason Code Block</codetabbutton>
+     <codetabbutton>My Ocaml Code Block</codetabbutton>
+   </codetabscontainer>
+ * @param {string} markdown
+ * @returns {string}
+ */
 function normalizeDocusaurusCodeTabs(markdown) {
   // Used to look it up later in the DOM and move things around to a more
   // convenient structure targetable by css.
@@ -893,7 +1010,6 @@ function normalizeDocusaurusCodeTabs(markdown) {
   };
   return markdown.replace(docusaurusTabsRegionRegex, onReplace)
         .replace(nonDocusaurusTabsRegionRegex, onReplace);
-  return ret;
 }
 
 var emptyHTML = "";
@@ -1038,6 +1154,73 @@ function splitStringCaseInsensitive(str, find) {
 }
 
 /**
+ * Makes code blocks wrap better.
+ */
+function splitIndentable(s) {
+   var lines = s.split('\n');
+   return lines.map(function(ln) {
+     var numLeading = ln.search(/\S|$/);
+     return '<div ' +
+       (numLeading > 0 ? 'class="paradoc-indented-' + numLeading  + '"': '') + ">" +
+       ln +
+       '</div>';
+   }).join('');
+}
+
+/**
+ * Makes code blocks wrap better (if already highlighted by hljs).  Assumes the
+ * first line is not indented (pretty safe assumption).  Will only cause better
+ * wrapping for line breaks that are contained within *non* highlighted
+ * portions of the code, which is most of them.
+ */
+function splitIndentableHighlighted(root) {
+  var newLineGroups = [[]];
+  var newLineGroupsObservedIndent = [0];
+  var nodes = [];
+  // backup copy
+  for(var t = 0; t < root.childNodes.length; t++) {
+    nodes.push(root.childNodes[t]);
+  }
+  for(var i = 0; i < nodes.length; i++) {
+    var node = nodes[i];
+    if(node.nodeType !== Node.TEXT_NODE) {
+      var lastLineGroupIndex = newLineGroups.length - 1;
+      var lastLineGroup = newLineGroups[lastLineGroupIndex];
+      lastLineGroup.push(node);
+    } else {
+      var lines = node.nodeValue.split('\n');
+      // TODO: The first should not have any indent no matter what.
+      // Even if it has a leading space
+      for(var j = 0; j < lines.length; j++) {
+        var ln = lines[j];
+        var txtElem = document.createTextNode(ln);
+        if(j === 0) {
+          // Stick leading text before a newline onto the previous line group.
+          var lastLineGroupIndex = newLineGroups.length - 1;
+          var lastLineGroup = newLineGroups[lastLineGroupIndex];
+          newLineGroups[newLineGroups.length - 1].push(txtElem);
+        } else {
+          var numLeading = ln.search(/\S|$/);
+          var lastLineGroupIndex = newLineGroups.length - 1;
+          newLineGroupsObservedIndent[lastLineGroupIndex + 1] = numLeading;
+          newLineGroups[lastLineGroupIndex + 1] = [txtElem];
+        }
+      }
+    }
+  }
+  root.innerHTML = '';
+  for(var z = 0; z < newLineGroups.length; z++) {
+    var lineDiv = document.createElement('div');
+    lineDiv.classList.add('paradoc-indented-' + newLineGroupsObservedIndent[z]);
+    root.appendChild(lineDiv);
+    for(var zz = 0; zz < newLineGroups[z].length; zz++) {
+      lineDiv.appendChild(newLineGroups[z][zz]);
+    }
+  }
+}
+
+
+/**
  * Only trust for markdown that came from trusted source (your own page).
  * I do not know exactly what portions are unsafe - perhaps none.
  */
@@ -1072,7 +1255,7 @@ var trustedTraverseAndHighlightImpl = function traverseAndHighlightImpl(regex, t
   }
   var openTag = "";
   var closeTag = "";
-  classAttr = className
+  var classAttr = className
     ? ' class="' + escapeHtml(className.value.replace("bookmark-in-doc-highlight", "")) + '"'
     : "";
   switch (tagName) {
@@ -1083,6 +1266,10 @@ var trustedTraverseAndHighlightImpl = function traverseAndHighlightImpl(regex, t
       break;
     case "code":
       var className = node.getAttributeNode("class");
+      if(node.classList.contains('odoc-bookmark-code-in-spec')) {
+        // TODO: Should this be splitIndentableHighlighted() ?
+        newInnerHtml = splitIndentable(newInnerHtml);
+      }
       openTag = className
         ? '<code class="' + escapeHtml(className.value) + '"' + classAttr + ">"
         : "<code>";
@@ -1400,6 +1587,22 @@ var getDomThingInnerText = function (domThing) {
   return domThing.nodeType === Node.TEXT_NODE ? domThing.textContent : domThing.textContent;
 };
 
+/**
+ * Table rows return textContent that is a concat of their tds, but there's no
+ * space between them - yet users see a space, so we want to index as if there
+ * were a space there.
+ */
+var getDomThingSearchableText = function (domThing) {
+  if(domThing.tagName === 'TR' || domThing.tagName === 'tr') {
+    return Array.prototype.map.call(domThing.children, function(child) {
+      return getDomThingInnerText(child);
+    }).join(' ');
+  } else {
+    return getDomThingInnerText(domThing);
+  }
+  return domThing.nodeType === Node.TEXT_NODE ? domThing.textContent : domThing.textContent;
+};
+
 var filterHierarchicalSearchables = function (query, pageState) {
   var txt = query.trim();
   var searchRegex = regexesFor(txt);
@@ -1426,7 +1629,7 @@ var filterHierarchicalSearchables = function (query, pageState) {
       var caseInsensitiveAnywhereNotWordBoundaryResults = [];
       searchables.forEach(function (searchable) {
         var indexable = searchable.indexable;
-        var nodeText = getDomThingInnerText(indexable);
+        var nodeText = getDomThingSearchableText(indexable);
         var test = findBestMatch(nodeText, searchRegex);
         var resultsToPush =
           test === -1
@@ -1487,6 +1690,23 @@ var bestSlugForContext = function (context) {
 var SMARTCASE = 0b10;
 var WORDBOUNDARY = 0b01;
 
+/**
+ * Generate RegExp for string matching
+ * Prioritize extract match (case sensive) and word boundary
+ * @param {string} str - String for matching
+ * @returns {
+  {
+    smartCase: {
+      wordBoundary: null | RegExp
+      anywhere: null | RegExp
+    },
+    caseInsensitive: {
+      wordBoundary: RegExp,
+      anywhere: RegExp
+    }
+  }
+ }
+ */
 var regexesFor = function (str) {
   var hasUpper = str.toLowerCase() !== str;
   return {
@@ -1510,18 +1730,27 @@ var regexesFor = function (str) {
   };
 };
 
+/**
+ * Resets the regexes lastIndex to 0 as a side effect.
+ * Regexes are stateful.
+ */
 var findBestMatch = function (stringToTest, regexes) {
+  var ret = -1;
+
   if (regexes.smartCase.wordBoundary && regexes.smartCase.wordBoundary.test(stringToTest)) {
-    return SMARTCASE | WORDBOUNDARY;
+    ret = SMARTCASE | WORDBOUNDARY;
   } else if (regexes.smartCase.anywhere && regexes.smartCase.anywhere.test(stringToTest)) {
-    return SMARTCASE;
+    ret = SMARTCASE;
   } else if (regexes.caseInsensitive.wordBoundary.test(stringToTest)) {
-    return WORDBOUNDARY;
+    ret = WORDBOUNDARY;
   } else if (regexes.caseInsensitive.anywhere.test(stringToTest)) {
-    return 0;
-  } else {
-    return -1;
+    ret = 0;
   }
+  if(regexes.smartCase.wordBoundary) regexes.smartCase.wordBoundary.lastIndex = 0;
+  if(regexes.smartCase.anywhere) regexes.smartCase.anywhere.lastIndex = 0;
+  regexes.caseInsensitive.wordBoundary.lastIndex = 0;
+  regexes.caseInsensitive.anywhere.lastIndex = 0;
+  return ret;
 };
 
 /* Matches found in the header itself will be considered in that context */
@@ -1801,6 +2030,14 @@ var fixupHrefOnAnchor = function(runner, node) {
   }
 };
 
+/**
+ * Template engine: Replace <template> tags with approriate content
+ * from headerProps of current page
+ * @param {string} siteTemplate - Template string
+ * @param {string} normalizedPageKeyForBasename - current pageKey
+ * @param {string} headerProps - YAML headersProps
+ * @returns {string} - Processed siteTemplate
+ */
 var substituteSiteTemplateContentsWithHeaderPropsOnFetch = function (
   siteTemplate,
   normalizedPageKeyForBasename,
@@ -1870,7 +2107,7 @@ var substituteSiteTemplateContentsWithHeaderPropsOnFetch = function (
 
 /**
  * Since we use one simple script for everything, we need to detect how it's
- * being used. If not a node script, it could be included from the main html
+ * being used. If not a node script, it could be included form the main html
  * page, or from a docs/stylus page. The main script tag in the main page will
  * be run at a point where there's no body in the document. For doc pages
  * (markdown/stylus) it will have a script tag at the top which implicitly
@@ -1920,6 +2157,7 @@ if (MODE === "bookmarkNodeMode") {
     var relFilePath = process.argv[2];
     var path = require("path");
     var absFilePath = path.resolve(process.cwd(), relFilePath);
+    var absDirPath = path.dirname(absFilePath);
     var fs = require("fs");
     var path = require("path");
     var Inliner = require("inliner");
@@ -1941,11 +2179,14 @@ if (MODE === "bookmarkNodeMode") {
           )
         : "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome";
 
+    var crashDumps =
+      process.platform !== "win32" ?
+      "--crash-dumps-dir=/tmp" : "";
     var cmd =
       pathToChrome +
-      " " +
-      absFilePath +
-      " --headless --dump-dom --virtual-time-budget=400";
+      " --headless --window-size=1920,1080 " + crashDumps + " --no-sandbox --disable-gpu --dump-dom --virtual-time-budget=1900 " +
+      absFilePath;
+    console.log('Running command ', cmd);
     var rendered = require("child_process").execSync(cmd).toString();
 
     var renderedHtmlPath = absFilePath.replace('.html', '') + ".paradoc-rendered.html";
@@ -1954,22 +2195,20 @@ if (MODE === "bookmarkNodeMode") {
 
     console.log("INLINING PAGE: ", indexHtmlPath);
 
+    /* Make sure you have images set to true to avoid flickering jumps */
+    /* collapseWhitespace fals otherwise messes up hljs */
     var options = {
-      /* Make sure you have this set to true to avoid flickering jumps */
       images: true,
       compressCSS: false,
       compressJS: false,
-      // If true, will mess with hljs.
       collapseWhitespace: false,
-      nosvg: true, // by default, DO compress SVG with SVGO
+      nosvg: true,
       skipAbsoluteUrls: false,
       preserveComments: true,
       iesafe: false,
     };
 
     new Inliner(renderedHtmlPath, options, function (error, html) {
-      // compressed and inlined HTML page
-      // console.log(html);
       if (error) {
         console.error(e);
         process.exit(1);
@@ -1977,6 +2216,16 @@ if (MODE === "bookmarkNodeMode") {
       fs.writeFileSync(indexHtmlPath, html);
       process.exit(0);
     });
+
+
+    // One liner:
+    // Run this command on the result of a Chrome Save As.
+    // npx inliner \
+    //   --skip-absolute-urls \
+    //  --nocompress \
+    //  --preserve-comments \
+    //  --videos \
+    //  ~/Desktop/input.html > ~/Desktop/output.html
   } else {
     console.error('Make sure you supply a path to the file you want to use as the entrypoint of the bundle. You have omitted it.');
   }
@@ -2037,6 +2286,7 @@ if (MODE === "bookmarkNodeMode") {
   // manually calls out to docs).
   document.write('<plaintext style="display:none">');
   document.addEventListener("DOMContentLoaded", function () {
+    /** @type {NodeListOf<HTMLElement>} */
     var plaintexts = document.querySelectorAll("plaintext");
     if (plaintexts.length === 1) {
       window.parent.postMessage(
@@ -2087,8 +2337,8 @@ if (MODE === "bookmarkNodeMode") {
   // However, I think this caused html contents inside of the markdown to be executed as html?
   window.onbeforeunload = function () {};
   document.addEventListener("DOMContentLoaded", function () {
+    /* @type {NodeListOf<HTMLElement>} */
     var plaintexts = document.querySelectorAll("plaintext");
-    console.log(plaintexts)
     if (plaintexts.length === 1) {
       // innerHtml escapes markup in plaintext in Safari, but not Chrome.
       // innerText behaves correctly for both.
@@ -2107,7 +2357,7 @@ if (MODE === "bookmarkNodeMode") {
       window.BookmarkTemplate.prefetchedCurrentPageBasename = urlBasename(window.location.href);
 
       var normalizedPageKeyForBasename = urlExtensionlessBasename(
-        BookmarkTemplate.prefetchedCurrentPageBasename
+        window.BookmarkTemplate.prefetchedCurrentPageBasename
       ).toLowerCase();
       window.BookmarkTemplate.prefetchedCurrentPageMarkdownAndHeader = markdownNormalizedYaml;
       // Set the variables for templates to read from.
@@ -2240,7 +2490,6 @@ if (MODE === "bookmarkNodeMode") {
     };
 
     Flatdoc.emptyPageData = function(pageKey) {
-
       return {
         ___pageKeyForErrorMessages: pageKey,
         explicitlySpecifiedPageConfig: null,
@@ -2276,18 +2525,6 @@ if (MODE === "bookmarkNodeMode") {
       };
       if (options.stylus) {
         actualOptions.stylusFetcher = Flatdoc.docPage(options.stylus);
-      }
-      var linkInfo = getLink(null, null, window.location, window.location.href);
-      var pageKey = linkInfo.pageKey;
-      // We'll treat whichever page you're loading from as the "start" page.
-      // When you render your single page bundle, you'll pick the right one you
-      // want to act as the "first" page.
-      if (!options.pages || !(pageKey in options.pages)) {
-        pageState[pageKey] = {
-          ...Flatdoc.emptyPageData(pageKeyLowerCase),
-          explicitlySpecifiedPageConfig: pages ? pages[pageKey] || null : null
-        };
-        Flatdoc.setFetcher(pageKey, pageState[pageKey]);
       }
       var pages = options.pages || {};
       for (var pageKey in pages) {
@@ -2568,27 +2805,6 @@ if (MODE === "bookmarkNodeMode") {
 
     var Parser = {};
 
-    /**
-     * Parses a given Markdown document.
-     * See `Parser` for more info.
-     */
-    Parser.parse = function (runner, markdownAndHeader, highlight, pageState, pageKey) {
-      marked = exports.marked;
-
-      Parser.setMarkedOptions(highlight);
-
-      var html = $("<div>" + marked(markdownAndHeader.markdown));
-      var title = markdownAndHeader.headerProps.title;
-      if (!title) {
-        title = html.find("h1").eq(0).text();
-      }
-
-      // Mangle content
-      Transformer.mangle(runner, html, pageState, pageKey);
-      var menu = Transformer.getMenu(runner, html);
-
-      return { content: html, menu: menu };
-    };
 
     Parser.setMarkedOptions = function (highlight) {
       marked.setOptions({
@@ -2849,8 +3065,8 @@ if (MODE === "bookmarkNodeMode") {
      *    executes that callback when data is returned.
      *
      * See: [Flatdoc.run()]
+     * @param {RunnerBase} options
      */
-
     var Runner = (Flatdoc.runner = function (options) {
       this.initialize(options);
     });
@@ -4036,45 +4252,96 @@ if (MODE === "bookmarkNodeMode") {
 
     /**
      * See documentation for `continueRight` css class in style.styl.
+     * These are all the right split dockable items (including ul.at-tags).
      */
     Runner.prototype.fixupAlignmentClasses = function () {
       document
         .querySelectorAll(
           // TODO: Add the tabs container here too.
-          ".bookmark-content > img + pre," +
+            ".bookmark-content > div + pre," +
+            ".bookmark-content > div + blockquote," +
+            ".bookmark-content > div + ul.at-tags," +
+            ".bookmark-content > img + pre," +
             ".bookmark-content > img + blockquote," +
+            ".bookmark-content > img + ul.at-tags," +
             ".bookmark-content > p + pre," +
             ".bookmark-content > p + blockquote," +
-            ".bookmark-content > ul + pre," +
-            ".bookmark-content > ul + blockquote," +
+            ".bookmark-content > p + ul.at-tags," +
+            ".bookmark-content > ul:not(.at-tags) + pre," +
+            ".bookmark-content > ul:not(.at-tags) + blockquote," +
+            ".bookmark-content > ul:not(.at-tags) + ul.at-tags," +
             ".bookmark-content > ol + pre," +
             ".bookmark-content > ol + blockquote," +
+            ".bookmark-content > ol + ul.at-tags," +
             ".bookmark-content > h0 + pre," +
             ".bookmark-content > h0 + blockquote," +
+            ".bookmark-content > h0 + ul.at-tags," +
             ".bookmark-content > h1 + pre," +
             ".bookmark-content > h1 + blockquote," +
+            ".bookmark-content > h1 + ul.at-tags," +
             ".bookmark-content > h2 + pre," +
             ".bookmark-content > h2 + blockquote," +
+            ".bookmark-content > h2 + ul.at-tags," +
             ".bookmark-content > h3 + pre," +
             ".bookmark-content > h3 + blockquote," +
+            ".bookmark-content > h3 + ul.at-tags," +
             ".bookmark-content > h4 + pre," +
             ".bookmark-content > h4 + blockquote," +
+            ".bookmark-content > h4 + ul.at-tags," +
             ".bookmark-content > h5 + pre," +
             ".bookmark-content > h5 + blockquote," +
+            ".bookmark-content > h5 + ul.at-tags," +
             ".bookmark-content > h6 + pre," +
             ".bookmark-content > h6 + blockquote," +
+            ".bookmark-content > h6 + ul.at-tags," +
             ".bookmark-content > table + pre," +
-            ".bookmark-content > table + blockquote"
+            ".bookmark-content > table + blockquote" +
+            ".bookmark-content > table + ul.at-tags"
         )
         .forEach(function (e) {
           // Annotate classes for the left and right items that are "resynced".
-          // This allows styling them differently. Maybe more top margins.  TODO:
-          // I don't think that bookmark-synced-up-left is needed. continueRight
-          // seems to do the trick and the css for bookmark-synced-up-left seems to
-          // just ruin it actually.
-          e.className += "bookmark-synced-up-right";
+          // This allows styling them differently. Maybe more top margins.  The
+          // only reason to have bookmark-synced-up-left is so that in this
+          // case doesn't happen. We need to tell D to stick to it's right
+          // column even if everything else after A should "continueRight".
+          // Normally you'd create a css rule that says (anything *before* a
+          // right attachment should clear:both but css doesn't let you target
+          // items that come *before* a next sibling. So we tag it with
+          // bookmark-synced-up-left using JS so we can do that.  There isn't
+          // currently a use for the bookmark-synced-up-right class but might
+          // as well tag it since we find them.
+          //
+          //
+          // A                   |   A
+          // <continueRight/>    |   A
+          // B                   |   A
+          // C                   |   A
+          // D                   |   A
+          //                     |   D
+          //
+          // We also apply a css class bookmark-continued-left to B and C so
+          // that CSS rules may taget them. This is used in the next use case
+          // mentioned below:
+          //
+          // Another use case for these classes, is when we have two rows of
+          // left/right pairs. We might want to provide extra spacing but
+          // *only* in those cases.
+          // A                   |   A
+          // B                   |   B
+          //
+          // (Note, to get this to work with continueRight, we must apply
+          // bookmark-continued-left classes to continued elements that are
+          // docked left)
+          //
+          //
+          // TODO: Move all css rules to simply target synced-up classes instead of
+          // rules that specify a <blockquote> etc. The rules get far too hard
+          // to target and synced-up classes make them very manageable. It
+          // requires running the JS in order to render (but so does
+          // everything, right? and prerendered pages make that not matter.)
+          e.className += " bookmark-synced-up-right";
           if (e.previousSibling) {
-            e.previousSibling.className += "bookmark-synced-up-left";
+            e.previousSibling.className += " bookmark-synced-up-left";
           }
         });
     };
@@ -4149,7 +4416,7 @@ if (MODE === "bookmarkNodeMode") {
     Runner.prototype.handleWindowHashChange = function () {
       var runner = this;
       runner.activatePageForCurrentUrl();
-      
+
       var linkInfo = getLink(
         runner.discoveredToBePrerenderedPageKey,
         runner.discoveredToBePrerenderedAtUrl,
@@ -4167,7 +4434,7 @@ if (MODE === "bookmarkNodeMode") {
         );
         return;
       }
-      
+
       var hashContents = linkInfo.hashContents;
       var queryParams = linkInfo.queryParams;
 
@@ -4248,13 +4515,6 @@ if (MODE === "bookmarkNodeMode") {
         });
       }
     };
-
-    Runner.prototype.run = function (
-      onCurrentRenderPageDone,
-      onAllRenderPagesDone,
-      onNextIndexPageDone,
-      onAllIndexPagesDone
-    ) {};
 
     /**
      * We create placeholder nodes inside the template to hold the old template
@@ -4345,7 +4605,7 @@ if (MODE === "bookmarkNodeMode") {
     Runner.prototype.substituteInDomSiteTemplateAfterSiteTemplateLoadedForEach = function() {
       var runner = this;
       var templateContainers = $("div.bookmarkTemplateForEachPage");
-      
+
       var replacer = function(pageKey, onePageState, commentText) {
         var originalKeyIndex = indexOfKey(runner.pageState, pageKey);
         var linkText = Flatdoc.getPageConfig('linkText', onePageState, kebabToWords(pageKey));
@@ -4436,7 +4696,7 @@ if (MODE === "bookmarkNodeMode") {
           document.body.classList.add('probably-has-keyboard')
         }
       }
-      
+
       document.addEventListener('touchstart', addTouchClass, false);
       document.addEventListener('mouseover', removeTouchClass, false);
     };
@@ -4461,7 +4721,7 @@ if (MODE === "bookmarkNodeMode") {
             // Allows targeting css for containers of images
             // since has() selector is not yet supported in css
             parent.className += ' imageContainer';
-          } 
+          }
         });
       }
     };
@@ -4469,13 +4729,8 @@ if (MODE === "bookmarkNodeMode") {
      * Loads the Markdown document (via the fetcher), parses it, and applies it
      * to the elements.
      */
-    Runner.prototype.run = function (
-      onCurrentRenderPageDone,
-      onAllRenderPagesDone,
-      onNextIndexPageDone,
-      onAllIndexPagesDone
-    ) {
-      var start = Date.now();
+    Runner.prototype.run = function () {
+      /** @type {Runner} runner */
       var runner = this;
       runner.setupPage();
       runner.setupSearch();
@@ -4486,6 +4741,22 @@ if (MODE === "bookmarkNodeMode") {
         runner.handleDocsFetchedCachedInDom();
         return;
       }
+      var linkInfo = getLink(
+        runner.discoveredToBePrerenderedPageKey,
+        runner.discoveredToBePrerenderedAtUrl,
+        window.location,
+        window.location.href
+      );
+
+      var pageKey = linkInfo.pageKey;
+      // We'll treat whichever page you're loading from as the "start" page.
+      // When you render your single page bundle, you'll pick the right one you
+      // want to act as the "first" page.
+      if (Object.keys(runner.pageState).length === 0 && !runner.pageState[pageKey]) {
+        runner.pageState[pageKey] = Flatdoc.emptyPageData(pageKey);
+        Flatdoc.setFetcher(pageKey, runner.pageState[pageKey]);
+      }
+
       // Have to store the file protocol/domain/path because when using Save As
       // links aren't relativized and on loading the saved page we have to
       // rewrite them relative to the saved page.
@@ -4537,20 +4808,59 @@ if (MODE === "bookmarkNodeMode") {
         if(err) {
           console.error("[Flatdoc] fetching Markdown data failed for page:" + pageKey + ".", err);
         } else {
-          // If we encounter a next page that hasn't been fetched yet, fetch it.
-          var exploreKey = 
-            (data.headerProps.nextPage && !runner.pageState[data.headerProps.nextPage]) ? data.headerProps.nextPage :
-            (data.headerProps.rootPage && !runner.pageState[data.headerProps.rootPage]) ? data.headerProps.rootPage : null;
-          if(data.headerProps.nextPage === pageKey) {
-            console.error('Page ' + newPageKey + ' has set itself as the "nextPage". Fix this.');
+          var headerProps = data.headerProps;
+          if (headerProps.rootPage && headerProps.nextPage) {
+            console.error(
+              "Both `rootKey` and `nextPage` are available.\n" +
+              "`rootKey` will be used as pages exploration method.\n" +
+              "Please remove `nextPage` or `rootKey`"
+            );
           }
-          if(exploreKey) {
-            var newPageKey = exploreKey.toLowerCase();
-            var newPageState = Flatdoc.emptyPageData(newPageKey);
-            runner.pageState[newPageKey] = newPageState;
-            runner.pageState = ensureKeyValOrderCircular(runner.pageState, pageKey, newPageKey);
-            Flatdoc.setFetcher(newPageKey, runner.pageState[newPageKey]);
-            fetchOne(runner.pageState[newPageKey].fetcher, handleFetchDone.bind(null, newPageKey));
+          // Only rootPage should have pages
+          if (headerProps.pages) {
+            /** @type {Array<string>} */
+            var pages = headerProps.pages.trim().split(",").map((s) => s.trim());
+            var cachedPageState = runner.pageState;
+            var pagesToFetch = [];
+            runner.pageState = {};
+            // This ensure correct order of pages according to `headerProps.pages`
+            pages.forEach((key) => {
+              if (cachedPageState[key]) {
+                runner.pageState[key] = cachedPageState[key]
+              } else {
+                runner.pageState[key] = Flatdoc.emptyPageData(key);
+                Flatdoc.setFetcher(key, runner.pageState[key]);
+                pagesToFetch.push(key);
+              }
+            });
+            pagesToFetch.forEach((key) => {
+              fetchOne(runner.pageState[key].fetcher, handleFetchDone.bind(null, key));
+            })
+          } 
+          // If currentPage has `rootPage` and it wasn't fetched yet
+          else if (headerProps.rootPage && !runner.pageState[headerProps.rootPage]) {
+            var key = headerProps.rootPage;
+            runner.pageState[key] = Flatdoc.emptyPageData(key);
+            Flatdoc.setFetcher(key, runner.pageState[key]);
+            fetchOne(runner.pageState[key].fetcher, handleFetchDone.bind(null, key));
+          } 
+          // Explore new pages via `nextpage`
+          else if (!headerProps.rootPage && headerProps.nextPage) {
+            // If we encounter a next page that hasn't been fetched yet, fetch it.
+            var exploreKey = 
+              (data.headerProps.nextPage && !runner.pageState[data.headerProps.nextPage]) ? data.headerProps.nextPage :
+              (data.headerProps.rootPage && !runner.pageState[data.headerProps.rootPage]) ? data.headerProps.rootPage : null;
+            if(data.headerProps.nextPage === pageKey) {
+              console.error('Page ' + newPageKey + ' has set itself as the "nextPage". Fix this.');
+            }
+            if(exploreKey) {
+              var newPageKey = exploreKey.toLowerCase();
+              var newPageState = Flatdoc.emptyPageData(newPageKey);
+              runner.pageState[newPageKey] = newPageState;
+              runner.pageState = ensureKeyValOrderCircular(runner.pageState, pageKey, newPageKey);
+              Flatdoc.setFetcher(newPageKey, runner.pageState[newPageKey]);
+              fetchOne(runner.pageState[newPageKey].fetcher, handleFetchDone.bind(null, newPageKey));
+            }
           }
         }
         handleDones();
@@ -4600,7 +4910,7 @@ if (MODE === "bookmarkNodeMode") {
     Runner.prototype.handleDocsFetchedCachedInDom = function () {
       var runner = this;
       var isSingleDocMode = runner.isSingleDocsMode();
-      
+
       function findAndSlugifyExperience(pageKey, pageData) {
         var contentContainerForPage = $(".bookmark-content.page-" + pageKey)[0];
         var titleH0 = $(contentContainerForPage).find("h0").eq(0);
@@ -4610,7 +4920,7 @@ if (MODE === "bookmarkNodeMode") {
         var hierarchicalDoc = hierarchize($(contentContainerForPage)[0]);
         annotateSlugsOnTreeNodes(hierarchicalDoc, runner.pageTemplateOptions.slugContributions);
         // TODO: Can do this on setTimeout.
-        var menuContainerNode = $(".bookmark-menubar.page-" + pageKey)[0];
+        var menuContainerNode = $(".bookmark-menusplit.page-" + pageKey)[0];
         var contentContainerNode = $(".bookmark-content.page-" + pageKey)[0];
         fixAllAnchorLinksUnderRoot(runner, menuContainerNode);
         fixAllAnchorLinksUnderRoot(runner, contentContainerNode);
@@ -4623,6 +4933,7 @@ if (MODE === "bookmarkNodeMode") {
               title: title,
               subtitle: subtitle,
               title: contentContainerNode.dataset.title,
+              linkText: contentContainerNode.dataset.linkText,
               subtitle: contentContainerNode.dataset.subtitle,
               hideInSearch: contentContainerNode.dataset.hideInSearch,
               hideInNav: contentContainerNode.dataset.hideInNav
@@ -4646,13 +4957,27 @@ if (MODE === "bookmarkNodeMode") {
       var runner = this;
       function appendExperience(pageKey, pageData) {
         var markdownAndHeader = pageData.markdownAndHeader;
+        var dangerouslyInjectAsHtml = pageData.markdownAndHeader.headerProps.dangerouslyInjectAsHtml;
 
         marked = exports.marked;
 
         Parser.setMarkedOptions(runner.highlight);
 
+
         // TODO
-        var premangledContent = $("<div>" + marked(markdownAndHeader.markdown) + "</div>");
+        var premangledContent = dangerouslyInjectAsHtml ?
+          $("<div>" + markdownAndHeader.markdown + "</div>") :
+          $("<div>" + marked(markdownAndHeader.markdown) + "</div>");
+        if (dangerouslyInjectAsHtml) {
+          $(premangledContent).find('code.paradoc-code-spec').each(function() {
+            var $el = $(this);
+            splitIndentableHighlighted(this);
+          })
+          $(premangledContent).find('.spec .def code, pre code').each(function() {
+            var $el = $(this);
+            $el.html(runner.highlight($el.text(), 'reasonml'));
+          })
+        }
         var pageClassName = "page page-" + pageKey;
         var containerForPageContent = document.createElement("div");
         containerForPageContent.className = "bookmark-content " + pageClassName;
@@ -4661,6 +4986,7 @@ if (MODE === "bookmarkNodeMode") {
         containerForPageContent.dataset.subtitle = markdownAndHeader.headerProps.subtitle;
         containerForPageContent.dataset.hideInSearch = markdownAndHeader.headerProps.hideInSearch;
         containerForPageContent.dataset.hideInNav = markdownAndHeader.headerProps.hideInNav;
+        containerForPageContent.dataset.linkText = markdownAndHeader.headerProps.linkText;
         if (markdownAndHeader.headerProps.title) {
           var titleForPage = document.createElement("h0");
           titleForPage.className = "bookmark-content-title " + pageClassName;
@@ -4681,11 +5007,11 @@ if (MODE === "bookmarkNodeMode") {
           title = premangledContent.find("h1").eq(0).text();
         }
         var nonBlankContent = $(premangledContent).find(">*");
-        var menuBarForPage = document.createElement("div");
-        menuBarForPage.className = "bookmark-menubar " + pageClassName;
+        var menuSplitForPage = document.createElement("div");
+        menuSplitForPage.className = "bookmark-menusplit " + pageClassName;
         var containerForPageMenu = document.createElement("div");
         containerForPageMenu.className = "bookmark-menu section " + pageClassName;
-        menuBarForPage.appendChild(containerForPageMenu);
+        menuSplitForPage.appendChild(containerForPageMenu);
 
         // It's mutated.
         var mangledContentForPage = premangledContent;
@@ -4694,7 +5020,7 @@ if (MODE === "bookmarkNodeMode") {
           containerForPageContent.appendChild(itm)
         );
         Transformer.buttonize(containerForPageContent);
-        
+
         Transformer.smartquotes(containerForPageContent);
 
         var hierarchicalDoc = hierarchize(containerForPageContent);
@@ -4707,11 +5033,11 @@ if (MODE === "bookmarkNodeMode") {
         );
 
         fixAllAnchorLinksUnderRoot(runner, containerForPageContent);
-        fixAllAnchorLinksUnderRoot(runner, menuBarForPage);
+        fixAllAnchorLinksUnderRoot(runner, menuSplitForPage);
         return {
           ...pageData,
           contentContainerNode: containerForPageContent,
-          menuContainerNode: menuBarForPage,
+          menuContainerNode: menuSplitForPage,
           hierarchicalDoc: hierarchicalDoc,
         };
       }
@@ -4734,7 +5060,6 @@ if (MODE === "bookmarkNodeMode") {
 
     Runner.prototype.activatePageForCurrentUrl = function () {
       var runner = this;
-      var linkInfo = getLink(null, null, window.location, window.location.href);
       var linkInfo = getLink(
         runner.discoveredToBePrerenderedPageKey,
         runner.discoveredToBePrerenderedAtUrl,
@@ -4925,7 +5250,7 @@ if (MODE === "bookmarkNodeMode") {
  * http://github.com/dankogai/js-base64
  * THERE's A PROBLEM LOADING THIS in entrypoint mode.
  */
-
+// @ts-ignore
 (function(r){"use strict";if(r.Base64)return;var e="2.1.2";var t;if(typeof module!=="undefined"&&module.exports){t=require("buffer").Buffer}var n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";var a=function(r){var e={};for(var t=0,n=r.length;t<n;t++)e[r.charAt(t)]=t;return e}(n);var o=String.fromCharCode;var u=function(r){if(r.length<2){var e=r.charCodeAt(0);return e<128?r:e<2048?o(192|e>>>6)+o(128|e&63):o(224|e>>>12&15)+o(128|e>>>6&63)+o(128|e&63)}else{var e=65536+(r.charCodeAt(0)-55296)*1024+(r.charCodeAt(1)-56320);return o(240|e>>>18&7)+o(128|e>>>12&63)+o(128|e>>>6&63)+o(128|e&63)}};var c=/[\uD800-\uDBFF][\uDC00-\uDFFFF]|[^\x00-\x7F]/g;var i=function(r){return r.replace(c,u)};var f=function(r){var e=[0,2,1][r.length%3],t=r.charCodeAt(0)<<16|(r.length>1?r.charCodeAt(1):0)<<8|(r.length>2?r.charCodeAt(2):0),a=[n.charAt(t>>>18),n.charAt(t>>>12&63),e>=2?"=":n.charAt(t>>>6&63),e>=1?"=":n.charAt(t&63)];return a.join("")};var h=r.btoa||function(r){return r.replace(/[\s\S]{1,3}/g,f)};var d=t?function(r){return new t(r).toString("base64")}:function(r){return h(i(r))};var v=function(r,e){return!e?d(r):d(r).replace(/[+\/]/g,function(r){return r=="+"?"-":"_"}).replace(/=/g,"")};var g=function(r){return v(r,true)};var l=new RegExp(["[À-ß][-¿]","[à-ï][-¿]{2}","[ð-÷][-¿]{3}"].join("|"),"g");var A=function(r){switch(r.length){case 4:var e=(7&r.charCodeAt(0))<<18|(63&r.charCodeAt(1))<<12|(63&r.charCodeAt(2))<<6|63&r.charCodeAt(3),t=e-65536;return o((t>>>10)+55296)+o((t&1023)+56320);case 3:return o((15&r.charCodeAt(0))<<12|(63&r.charCodeAt(1))<<6|63&r.charCodeAt(2));default:return o((31&r.charCodeAt(0))<<6|63&r.charCodeAt(1))}};var s=function(r){return r.replace(l,A)};var p=function(r){var e=r.length,t=e%4,n=(e>0?a[r.charAt(0)]<<18:0)|(e>1?a[r.charAt(1)]<<12:0)|(e>2?a[r.charAt(2)]<<6:0)|(e>3?a[r.charAt(3)]:0),u=[o(n>>>16),o(n>>>8&255),o(n&255)];u.length-=[0,0,2,1][t];return u.join("")};var C=r.atob||function(r){return r.replace(/[\s\S]{1,4}/g,p)};var b=t?function(r){return new t(r,"base64").toString()}:function(r){return s(C(r))};var B=function(r){return b(r.replace(/[-_]/g,function(r){return r=="-"?"+":"/"}).replace(/[^A-Za-z0-9\+\/]/g,""))};r.Base64={VERSION:e,atob:C,btoa:h,fromBase64:B,toBase64:v,utob:i,encode:v,encodeURI:g,btou:s,decode:B};if(typeof Object.defineProperty==="function"){var S=function(r){return{value:r,enumerable:false,writable:true,configurable:true}};r.Base64.extendString=function(){Object.defineProperty(String.prototype,"fromBase64",S(function(){return B(this)}));Object.defineProperty(String.prototype,"toBase64",S(function(r){return v(this,r)}));Object.defineProperty(String.prototype,"toBase64URI",S(function(){return v(this,true)}))}}})(this);
 
 /**
@@ -4940,7 +5265,7 @@ if (MODE === "bookmarkNodeMode") {
  * https://github.com/fyalavuz/node-parameterize
  * Exported as `Flatdoc.slugify`
  */
-
+// @ts-ignore
 (function(r){var LATIN_MAP={"À":"A","Á":"A","Â":"A","Ã":"A","Ä":"A","Å":"A","Æ":"AE","Ç":"C","È":"E","É":"E","Ê":"E","Ë":"E","Ì":"I","Í":"I","Î":"I","Ï":"I","Ð":"D","Ñ":"N","Ò":"O","Ó":"O","Ô":"O","Õ":"O","Ö":"O","Ő":"O","Ø":"O","Ù":"U","Ú":"U","Û":"U","Ü":"U","Ű":"U","Ý":"Y","Þ":"TH","ß":"ss","à":"a","á":"a","â":"a","ã":"a","ä":"a","å":"a","æ":"ae","ç":"c","è":"e","é":"e","ê":"e","ë":"e","ì":"i","í":"i","î":"i","ï":"i","ð":"d","ñ":"n","ò":"o","ó":"o","ô":"o","õ":"o","ö":"o","ő":"o","ø":"o","ù":"u","ú":"u","û":"u","ü":"u","ű":"u","ý":"y","þ":"th","ÿ":"y"};var LATIN_SYMBOLS_MAP={"©":"(c)"};var GREEK_MAP={"α":"a","β":"b","γ":"g","δ":"d","ε":"e","ζ":"z","η":"h","θ":"8","ι":"i","κ":"k","λ":"l","μ":"m","ν":"n","ξ":"3","ο":"o","π":"p","ρ":"r","σ":"s","τ":"t","υ":"y","φ":"f","χ":"x","ψ":"ps","ω":"w","ά":"a","έ":"e","ί":"i","ό":"o","ύ":"y","ή":"h","ώ":"w","ς":"s","ϊ":"i","ΰ":"y","ϋ":"y","ΐ":"i","Α":"A","Β":"B","Γ":"G","Δ":"D","Ε":"E","Ζ":"Z","Η":"H","Θ":"8","Ι":"I","Κ":"K","Λ":"L","Μ":"M","Ν":"N","Ξ":"3","Ο":"O","Π":"P","Ρ":"R","Σ":"S","Τ":"T","Υ":"Y","Φ":"F","Χ":"X","Ψ":"PS","Ω":"W","Ά":"A","Έ":"E","Ί":"I","Ό":"O","Ύ":"Y","Ή":"H","Ώ":"W","Ϊ":"I","Ϋ":"Y"};var TURKISH_MAP={"ş":"s","Ş":"S","ı":"i","İ":"I","ç":"c","Ç":"C","ü":"u","Ü":"U","ö":"o","Ö":"O","ğ":"g","Ğ":"G"};var RUSSIAN_MAP={"а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"yo","ж":"zh","з":"z","и":"i","й":"j","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"h","ц":"c","ч":"ch","ш":"sh","щ":"sh","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya","А":"A","Б":"B","В":"V","Г":"G","Д":"D","Е":"E","Ё":"Yo","Ж":"Zh","З":"Z","И":"I","Й":"J","К":"K","Л":"L","М":"M","Н":"N","О":"O","П":"P","Р":"R","С":"S","Т":"T","У":"U","Ф":"F","Х":"H","Ц":"C","Ч":"Ch","Ш":"Sh","Щ":"Sh","Ъ":"","Ы":"Y","Ь":"","Э":"E","Ю":"Yu","Я":"Ya"};var UKRAINIAN_MAP={"Є":"Ye","І":"I","Ї":"Yi","Ґ":"G","є":"ye","і":"i","ї":"yi","ґ":"g"};var CZECH_MAP={"č":"c","ď":"d","ě":"e","ň":"n","ř":"r","š":"s","ť":"t","ů":"u","ž":"z","Č":"C","Ď":"D","Ě":"E","Ň":"N","Ř":"R","Š":"S","Ť":"T","Ů":"U","Ž":"Z"};var POLISH_MAP={"ą":"a","ć":"c","ę":"e","ł":"l","ń":"n","ó":"o","ś":"s","ź":"z","ż":"z","Ą":"A","Ć":"C","Ę":"e","Ł":"L","Ń":"N","Ó":"o","Ś":"S","Ź":"Z","Ż":"Z"};var LATVIAN_MAP={"ā":"a","č":"c","ē":"e","ģ":"g","ī":"i","ķ":"k","ļ":"l","ņ":"n","š":"s","ū":"u","ž":"z","Ā":"A","Č":"C","Ē":"E","Ģ":"G","Ī":"i","Ķ":"k","Ļ":"L","Ņ":"N","Š":"S","Ū":"u","Ž":"Z"};var ALL_DOWNCODE_MAPS=new Array;ALL_DOWNCODE_MAPS[0]=LATIN_MAP;ALL_DOWNCODE_MAPS[1]=LATIN_SYMBOLS_MAP;ALL_DOWNCODE_MAPS[2]=GREEK_MAP;ALL_DOWNCODE_MAPS[3]=TURKISH_MAP;ALL_DOWNCODE_MAPS[4]=RUSSIAN_MAP;ALL_DOWNCODE_MAPS[5]=UKRAINIAN_MAP;ALL_DOWNCODE_MAPS[6]=CZECH_MAP;ALL_DOWNCODE_MAPS[7]=POLISH_MAP;ALL_DOWNCODE_MAPS[8]=LATVIAN_MAP;var Downcoder=new Object;Downcoder.Initialize=function(){if(Downcoder.map)return;Downcoder.map={};Downcoder.chars="";for(var i in ALL_DOWNCODE_MAPS){var lookup=ALL_DOWNCODE_MAPS[i];for(var c in lookup){Downcoder.map[c]=lookup[c];Downcoder.chars+=c}}Downcoder.regex=new RegExp("["+Downcoder.chars+"]|[^"+Downcoder.chars+"]+","g")};downcode=function(slug){Downcoder.Initialize();var downcoded="";var pieces=slug.match(Downcoder.regex);if(pieces){for(var i=0;i<pieces.length;i++){if(pieces[i].length==1){var mapped=Downcoder.map[pieces[i]];if(mapped!=null){downcoded+=mapped;continue}}downcoded+=pieces[i]}}else{downcoded=slug}return downcoded};Flatdoc.slugify=function(s,num_chars){s=downcode(s);s=s.replace(/[^-\w\s]/g,"");s=s.replace(/^\s+|\s+$/g,"");s=s.replace(/[-\s]+/g,"-");s=s.toLowerCase();return s.substring(0,num_chars)};})();
 
 /*!
@@ -4950,6 +5275,7 @@ if (MODE === "bookmarkNodeMode") {
  * 
  * https://github.com/lifaon74/url-polyfill/blob/master/url-polyfill.min.js
  */
+// @ts-ignore
 (function(t){var e=function(){try{return!!Symbol.iterator}catch(e){return false}};var r=e();var n=function(t){var e={next:function(){var e=t.shift();return{done:e===void 0,value:e}}};if(r){e[Symbol.iterator]=function(){return e}}return e};var i=function(e){return encodeURIComponent(e).replace(/%20/g,"+")};var o=function(e){return decodeURIComponent(String(e).replace(/\+/g," "))};var a=function(){var a=function(e){Object.defineProperty(this,"_entries",{writable:true,value:{}});var t=typeof e;if(t==="undefined"){}else if(t==="string"){if(e!==""){this._fromString(e)}}else if(e instanceof a){var r=this;e.forEach(function(e,t){r.append(t,e)})}else if(e!==null&&t==="object"){if(Object.prototype.toString.call(e)==="[object Array]"){for(var n=0;n<e.length;n++){var i=e[n];if(Object.prototype.toString.call(i)==="[object Array]"||i.length!==2){this.append(i[0],i[1])}else{throw new TypeError("Expected [string, any] as entry at index "+n+" of URLSearchParams's input")}}}else{for(var o in e){if(e.hasOwnProperty(o)){this.append(o,e[o])}}}}else{throw new TypeError("Unsupported input's type for URLSearchParams")}};var e=a.prototype;e.append=function(e,t){if(e in this._entries){this._entries[e].push(String(t))}else{this._entries[e]=[String(t)]}};e.delete=function(e){delete this._entries[e]};e.get=function(e){return e in this._entries?this._entries[e][0]:null};e.getAll=function(e){return e in this._entries?this._entries[e].slice(0):[]};e.has=function(e){return e in this._entries};e.set=function(e,t){this._entries[e]=[String(t)]};e.forEach=function(e,t){var r;for(var n in this._entries){if(this._entries.hasOwnProperty(n)){r=this._entries[n];for(var i=0;i<r.length;i++){e.call(t,r[i],n,this)}}}};e.keys=function(){var r=[];this.forEach(function(e,t){r.push(t)});return n(r)};e.values=function(){var t=[];this.forEach(function(e){t.push(e)});return n(t)};e.entries=function(){var r=[];this.forEach(function(e,t){r.push([t,e])});return n(r)};if(r){e[Symbol.iterator]=e.entries}e.toString=function(){var r=[];this.forEach(function(e,t){r.push(i(t)+"="+i(e))});return r.join("&")};t.URLSearchParams=a};var s=function(){try{var e=t.URLSearchParams;return new e("?a=1").toString()==="a=1"&&typeof e.prototype.set==="function"&&typeof e.prototype.entries==="function"}catch(e){return false}};if(!s()){a()}var f=t.URLSearchParams.prototype;if(typeof f.sort!=="function"){f.sort=function(){var r=this;var n=[];this.forEach(function(e,t){n.push([t,e]);if(!r._entries){r.delete(t)}});n.sort(function(e,t){if(e[0]<t[0]){return-1}else if(e[0]>t[0]){return+1}else{return 0}});if(r._entries){r._entries={}}for(var e=0;e<n.length;e++){this.append(n[e][0],n[e][1])}}}if(typeof f._fromString!=="function"){Object.defineProperty(f,"_fromString",{enumerable:false,configurable:false,writable:false,value:function(e){if(this._entries){this._entries={}}else{var r=[];this.forEach(function(e,t){r.push(t)});for(var t=0;t<r.length;t++){this.delete(r[t])}}e=e.replace(/^\?/,"");var n=e.split("&");var i;for(var t=0;t<n.length;t++){i=n[t].split("=");this.append(o(i[0]),i.length>1?o(i[1]):"")}}})}})(typeof global!=="undefined"?global:typeof window!=="undefined"?window:typeof self!=="undefined"?self:this);(function(u){var e=function(){try{var e=new u.URL("b","http://a");e.pathname="c d";return e.href==="http://a/c%20d"&&e.searchParams}catch(e){return false}};var t=function(){var t=u.URL;var e=function(e,t){if(typeof e!=="string")e=String(e);if(t&&typeof t!=="string")t=String(t);var r=document,n;if(t&&(u.location===void 0||t!==u.location.href)){t=t.toLowerCase();r=document.implementation.createHTMLDocument("");n=r.createElement("base");n.href=t;r.head.appendChild(n);try{if(n.href.indexOf(t)!==0)throw new Error(n.href)}catch(e){throw new Error("URL unable to set base "+t+" due to "+e)}}var i=r.createElement("a");i.href=e;if(n){r.body.appendChild(i);i.href=i.href}var o=r.createElement("input");o.type="url";o.value=e;if(i.protocol===":"||!/:/.test(i.href)||!o.checkValidity()&&!t){throw new TypeError("Invalid URL")}Object.defineProperty(this,"_anchorElement",{value:i});var a=new u.URLSearchParams(this.search);var s=true;var f=true;var c=this;["append","delete","set"].forEach(function(e){var t=a[e];a[e]=function(){t.apply(a,arguments);if(s){f=false;c.search=a.toString();f=true}}});Object.defineProperty(this,"searchParams",{value:a,enumerable:true});var h=void 0;Object.defineProperty(this,"_updateSearchParams",{enumerable:false,configurable:false,writable:false,value:function(){if(this.search!==h){h=this.search;if(f){s=false;this.searchParams._fromString(this.search);s=true}}}})};var r=e.prototype;var n=function(t){Object.defineProperty(r,t,{get:function(){return this._anchorElement[t]},set:function(e){this._anchorElement[t]=e},enumerable:true})};["hash","host","hostname","port","protocol"].forEach(function(e){n(e)});Object.defineProperty(r,"search",{get:function(){return this._anchorElement["search"]},set:function(e){this._anchorElement["search"]=e;this._updateSearchParams()},enumerable:true});Object.defineProperties(r,{toString:{get:function(){var e=this;return function(){return e.href}}},href:{get:function(){return this._anchorElement.href.replace(/\?$/,"")},set:function(e){this._anchorElement.href=e;this._updateSearchParams()},enumerable:true},pathname:{get:function(){return this._anchorElement.pathname.replace(/(^\/?)/,"/")},set:function(e){this._anchorElement.pathname=e},enumerable:true},origin:{get:function(){var e={"http:":80,"https:":443,"ftp:":21}[this._anchorElement.protocol];var t=this._anchorElement.port!=e&&this._anchorElement.port!=="";return this._anchorElement.protocol+"//"+this._anchorElement.hostname+(t?":"+this._anchorElement.port:"")},enumerable:true},password:{get:function(){return""},set:function(e){},enumerable:true},username:{get:function(){return""},set:function(e){},enumerable:true}});e.createObjectURL=function(e){return t.createObjectURL.apply(t,arguments)};e.revokeObjectURL=function(e){return t.revokeObjectURL.apply(t,arguments)};u.URL=e};if(!e()){t()}if(u.location!==void 0&&!("origin"in u.location)){var r=function(){return u.location.protocol+"//"+u.location.hostname+(u.location.port?":"+u.location.port:"")};try{Object.defineProperty(u.location,"origin",{get:r,enumerable:true})}catch(e){setInterval(function(){u.location.origin=r()},100)}}})(typeof global!=="undefined"?global:typeof window!=="undefined"?window:typeof self!=="undefined"?self:this);
 
 
