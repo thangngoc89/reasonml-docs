@@ -4933,7 +4933,8 @@ if (MODE === "bookmarkNodeMode") {
               // title: title,
               subtitle: subtitle,
               title: contentContainerNode.dataset.title,
-              linkText: contentContainerNode.dataset.linkText || kebabToWords(pageKey),
+              // This is probably not the proper place to fix this. Should be fixed in rendering step
+              linkText: contentContainerNode.dataset.linkText === "undefined" ? kebabToWords(pageKey) : contentContainerNode.dataset.linkText ,
               subtitle: contentContainerNode.dataset.subtitle,
               hideInSearch: contentContainerNode.dataset.hideInSearch,
               hideInNav: contentContainerNode.dataset.hideInNav
