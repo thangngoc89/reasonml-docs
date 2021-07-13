@@ -4932,7 +4932,7 @@ if (MODE === "bookmarkNodeMode") {
             headerProps: {
               title: title,
               subtitle: subtitle,
-              title: contentContainerNode.dataset.title,
+              // title: contentContainerNode.dataset.title,
               linkText: contentContainerNode.dataset.linkText,
               subtitle: contentContainerNode.dataset.subtitle,
               hideInSearch: contentContainerNode.dataset.hideInSearch,
