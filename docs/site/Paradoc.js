@@ -4930,10 +4930,10 @@ if (MODE === "bookmarkNodeMode") {
             // We don't retain the original markdown on prerendered pages.
             markdown: null,
             headerProps: {
-              title: title,
+              // title: title,
               subtitle: subtitle,
-              // title: contentContainerNode.dataset.title,
-              linkText: contentContainerNode.dataset.linkText,
+              title: contentContainerNode.dataset.title,
+              linkText: contentContainerNode.dataset.linkText || kebabToWords(pageKey),
               subtitle: contentContainerNode.dataset.subtitle,
               hideInSearch: contentContainerNode.dataset.hideInSearch,
               hideInNav: contentContainerNode.dataset.hideInNav
